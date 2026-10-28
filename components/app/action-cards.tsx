@@ -130,7 +130,11 @@ export function CalendarCard({ threadId, action }: { threadId: string; action: C
       const s = useDemo.getState();
       const body = s.proposals[threadId]?.replyBody ?? "";
       const original = formatRange(action.startISO, action.endISO, tz);
-      if (body.includes(original)) s.setReplyBody(threadId, body.replaceAll(original, label));
+      if (body.includes(original)) {
+        s.setReplyBody(threadId, body.replaceAll(original, label));
+      } else if (s.actionStatus[`${threadId}:send`] !== "done") {
+        toast.warning("Check the time in your draft", { description: `The call is now ${label}.` });
+      }
     }
     toast.success("Added to calendar", { description: label });
   };
