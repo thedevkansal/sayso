@@ -68,8 +68,8 @@ export function TimeGrid({
   days,
   events,
   tz,
-  startHour = 6,
-  endHour = 22,
+  startHour = 7,
+  endHour = 21,
   hourHeight = 48,
   scrollTo,
   showDayHeaders = true,
@@ -103,14 +103,8 @@ export function TimeGrid({
   useEffect(() => {
     const el = scroller.current;
     if (!el) return;
-    // Default window is 10 am–5 pm; scroll elsewhere only when the target falls outside it.
-    const windowStart = (10 - startHour) * 60;
-    const windowEnd = (17 - startHour) * 60;
-    let mins = windowStart;
-    if (scrollTo) {
-      const t = minutesOfDay(scrollTo, tz) - startHour * 60;
-      if (t < windowStart || t + 30 > windowEnd) mins = t - 60;
-    }
+    // Bring the focused event into view (with an hour of context); otherwise start at the top of the day.
+    const mins = scrollTo ? minutesOfDay(scrollTo, tz) - startHour * 60 - 60 : 0;
     el.scrollTop = Math.max(0, mins * pxPerMin);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-scroll when the target changes
   }, [scrollTo, days.join()]);
