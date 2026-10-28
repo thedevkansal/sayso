@@ -49,9 +49,11 @@ export function ProposalPanel({
         <ErrorBlock message={proposal.error ?? "Couldn't draft a reply."} onRetry={onRetryProposal} label="Try again" />
       )}
 
-      <Section title="Questions answered" icon={ListChecks} aside={!thinking && asks.length > 0 ? <CoverageScore proposal={proposal} total={asks.length} /> : null}>
-        {thinking ? <ListSkeleton rows={Math.max(asks.length, 2)} /> : <CoverageList asks={asks} proposal={proposal} />}
-      </Section>
+      {asks.length > 0 && (
+        <Section title="Questions answered" icon={ListChecks} aside={!thinking ? <CoverageScore proposal={proposal} total={asks.length} /> : null}>
+          {thinking ? <ListSkeleton rows={asks.length} /> : <CoverageList asks={asks} proposal={proposal} />}
+        </Section>
+      )}
 
       {!thinking && proposal.gaps.length > 0 && (
         <motion.div

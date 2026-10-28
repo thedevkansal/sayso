@@ -19,7 +19,8 @@ Small calls made while building, newest at the bottom of each section.
 - Node runtime everywhere; no edge runtime.
 
 ## LLM
-- **Provider: Google Gemini** (owner's call, replaces the brief's Anthropic default) via `@google/genai`. Model from `GEMINI_MODEL`, default `gemini-flash-latest` (stable alias from the SDK docs, so no guessed version id).
+- **Provider: Google Gemini** (owner's call, replaces the brief's Anthropic default) via `@google/genai`. Model from `GEMINI_MODEL`, default `gemini-3.5-flash` with thinking level LOW, falling back to `gemini-3.5-flash-lite` on 503 or timeout. Measured on 29 Oct 2026 with this key: `gemini-flash-latest` hung >60s, `gemini-3.8-flash` (the API's own recommendation) returned 503 "high demand" or took 11–45s, `3.5-flash` ~4s, `3.5-flash-lite` ~1.5s. `gemini-2.5-*` is closed to new keys.
+- **Schema sanitising:** Gemini returns a bare 400 for some valid JSON Schema (many `maxItems` in one schema, ±2^53 integer bounds). We strip size bounds before sending; zod still enforces them on the response.
 - **Structured output:** `responseMimeType: application/json` + `responseJsonSchema` generated from the zod schemas (`z.toJSONSchema`), then zod-validated; one retry with the validation error, then a friendly error.
 - **Three calls per reply, not two:** `analyzeThread` (on open, cached), `buildProposal` core (facts, coverage, gaps, actions as JSON), then the reply body streamed as plain text from the validated plan. The reply writer never sees the raw dictation, so private asides and unverified facts can't leak into the email.
 - **Actions are flattened** into one object shape for the model (Gemini's schema subset is happiest without unions) and narrowed server-side.

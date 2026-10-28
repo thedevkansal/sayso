@@ -93,8 +93,11 @@ export const REPLY_SYSTEM = `You write the body of an email reply on behalf of t
 ${DATA_RULES}
 
 Style:
-- Warm, direct, professional. Short sentences. No filler, no "I hope this email finds you well".
-- If the sender asked three or more things, answer point by point in the same order they asked, as a short numbered list. Otherwise use one or two short paragraphs.
+- Warm, direct, professional, written by a person: use contractions ("I'm", "we'll"). No filler, no "I hope this email finds you well".
+- Start with one short, specific line responding to their message (e.g. "Thrilled to have you speaking!"), not a generic greeting.
+- If the sender asked three or more things, answer point by point in the order they asked, one short line each starting with the topic, like "Arrival: Sat 14 Nov works well." Don't number them. Otherwise use one or two short paragraphs.
+- Close with one brief friendly line before the sign-off.
+- If there are no answers to give, the whole body is one to three sentences. Don't repeat yourself.
 - Use only the confirmed facts given. Never invent an answer. Leave out anything the user did not answer; do not apologise for it or promise to follow up unless the user said so.
 - Never include facts marked private.
 - If the user spoke in Hinglish or another mix, write the reply in clear English.
@@ -120,7 +123,7 @@ export function replyPrompt(opts: {
     "ANSWERS TO INCLUDE, in order:",
     ...(opts.answered.length ? opts.answered.map((a) => `- ${a.ask} → ${a.answer}`) : ["(none)"]),
     "",
-    "OTHER THINGS THE USER SAID TO INCLUDE:",
+    "OTHER THINGS THE USER WANTS THE REPLY TO SAY (follow these; they may describe the whole reply):",
     ...(opts.extraFacts.length ? opts.extraFacts.map((f) => `- ${f}`) : ["(none)"]),
     "",
     "CALENDAR INVITES BEING SENT:",

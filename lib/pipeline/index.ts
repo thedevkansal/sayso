@@ -147,8 +147,11 @@ export function streamReply(
   const answered = core.coverage
     .filter((c) => c.status !== "missing" && c.answer)
     .map((c) => ({ ask: asks.find((a) => a.id === c.askId)?.text ?? "", answer: c.answer! }));
+  // Verified things the user wants said that don't map to an ask ("just say thanks").
+  // Calendar/travel instructions are covered by `invites`/`travel` below.
   const extraFacts = core.understoodFacts
-    .filter((f) => !f.askId && f.kind === "answer")
+    .filter((f) => !f.askId && f.verified && (f.kind === "answer" || f.kind === "instruction"))
+    .filter((f) => !core.actions.some((a) => traceable(a.sourceQuote, f.phrase) || traceable(f.phrase, a.sourceQuote)))
     .map((f) => f.fact);
   const invites = core.actions
     .filter((a) => a.type === "calendar_event")

@@ -124,7 +124,15 @@ export function CalendarCard({ threadId, action }: { threadId: string; action: C
   const book = (startISO: string, endISO: string) => {
     addEvent({ id: `ev-${key}`, title: action.title, startISO, endISO, source: "sayso", attendees: action.attendees });
     setStatus(key, "done");
-    toast.success("Added to calendar", { description: formatRange(startISO, endISO, tz) });
+    const label = formatRange(startISO, endISO, tz);
+    // Moved to another slot: keep the email in sync with what was actually booked.
+    if (startISO !== action.startISO) {
+      const s = useDemo.getState();
+      const body = s.proposals[threadId]?.replyBody ?? "";
+      const original = formatRange(action.startISO, action.endISO, tz);
+      if (body.includes(original)) s.setReplyBody(threadId, body.replaceAll(original, label));
+    }
+    toast.success("Added to calendar", { description: label });
   };
 
   return (
