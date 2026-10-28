@@ -18,6 +18,14 @@ Small calls made while building, newest at the bottom of each section.
 - `@types/node` bumped to 24 to satisfy Vitest 5 peer range.
 - Node runtime everywhere; no edge runtime.
 
+## LLM
+- **Provider: Google Gemini** (owner's call, replaces the brief's Anthropic default) via `@google/genai`. Model from `GEMINI_MODEL`, default `gemini-flash-latest` (stable alias from the SDK docs, so no guessed version id).
+- **Structured output:** `responseMimeType: application/json` + `responseJsonSchema` generated from the zod schemas (`z.toJSONSchema`), then zod-validated; one retry with the validation error, then a friendly error.
+- **Three calls per reply, not two:** `analyzeThread` (on open, cached), `buildProposal` core (facts, coverage, gaps, actions as JSON), then the reply body streamed as plain text from the validated plan. The reply writer never sees the raw dictation, so private asides and unverified facts can't leak into the email.
+- **Actions are flattened** into one object shape for the model (Gemini's schema subset is happiest without unions) and narrowed server-side.
+- **Safety guards (deterministic, server-side):** every action's `sourceQuote` must trace to the dictation (normalised substring or ≥80% word overlap, and any negation word must match exactly); calendar attendees must be thread participants; past dates and malformed times are dropped; regex injection detector runs alongside the model's own flag.
+- **Weekday maths:** the prompt includes a 21-day table ("Friday 2026-10-30") so the model reads dates instead of computing them.
+
 ## Infra
 - **Rate limit + spend cap store:** Upstash Redis (free tier) via Vercel Marketplace; in-memory fallback when `UPSTASH_REDIS_REST_URL` is unset (local dev).
 - **Deploy:** private GitHub repo + Vercel Git integration. Previews per push, `main` is production.
