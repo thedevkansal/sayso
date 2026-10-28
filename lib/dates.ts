@@ -4,7 +4,7 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 export const DEFAULT_TZ = "Asia/Kolkata";
 
 export function tzAbbr(tz: string, at: Date = new Date()): string {
-  if (tz === "Asia/Kolkata") return "IST";
+  if (tz === "Asia/Kolkata" || tz === "Asia/Calcutta") return "IST";
   return formatInTimeZone(at, tz, "zzz");
 }
 

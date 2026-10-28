@@ -115,8 +115,10 @@ function freshDemo(): State {
 }
 
 function freshLive(): State {
-  const tz =
+  const detected =
     typeof Intl !== "undefined" ? (Intl.DateTimeFormat().resolvedOptions().timeZone ?? DEFAULT_TZ) : DEFAULT_TZ;
+  // Some browsers still report the legacy IANA alias.
+  const tz = detected === "Asia/Calcutta" ? "Asia/Kolkata" : detected;
   return {
     ...freshDemo(),
     mode: "live",

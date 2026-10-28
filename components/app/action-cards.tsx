@@ -56,6 +56,9 @@ function CardShell({
   );
 }
 
+/** Automated senders that won't read a reply or accept an invite. */
+const isNoReply = (email?: string) => !!email && /(^|[._-])(no-?reply|do-?not-?reply|notifications?|mailer-daemon|bounce)s?([._+-]|@)/i.test(email);
+
 const primaryBtn =
   "inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-85 disabled:opacity-40";
 const secondaryBtn =
@@ -97,6 +100,11 @@ export function SendCard({ threadId, disabled }: { threadId: string; disabled: b
         <dt className="text-mute">Subject</dt>
         <dd className="truncate text-ink">{p.replySubject}</dd>
       </dl>
+      {!done && isNoReply(to?.email) && (
+        <p className="mt-3 flex items-start gap-1.5 rounded-xl bg-warn-soft p-3 text-sm text-warn">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" /> This looks like an automated no-reply address. Nobody will read a reply.
+        </p>
+      )}
       {live && !done && (
         <div className="mt-3">
           <p className="text-xs text-mute">Exactly this will be sent from your Gmail:</p>
@@ -189,6 +197,11 @@ export function CalendarCard({ threadId, action }: { threadId: string; action: C
         </p>
       )}
       <p className="mt-2 text-xs text-mute">From what you said: &ldquo;{action.sourceQuote}&rdquo;</p>
+      {!done && action.attendees.some(isNoReply) && (
+        <p className="mt-2 flex items-start gap-1.5 text-xs text-warn">
+          <AlertTriangle className="mt-px size-3.5 shrink-0" /> The invitee looks like an automated no-reply address.
+        </p>
+      )}
 
       {conflicts.length > 0 && (
         <div className="mt-3 rounded-xl bg-warn-soft p-3 text-sm text-warn">
