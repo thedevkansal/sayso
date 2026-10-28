@@ -48,13 +48,8 @@ export function analyze(threadId: string, { force = false } = {}) {
 const controllers = new Map<string, AbortController>();
 
 export async function propose(threadId: string) {
-  await analyze(threadId);
-  const s = useDemo.getState();
-  const thread = s.threads.find((t) => t.id === threadId);
-  const analysis = s.analyses[threadId];
-  const transcript = (s.transcripts[threadId] ?? "").trim();
-  if (!thread || !transcript) return;
-  if (analysis?.status !== "ready") return;
+  const transcript = (useDemo.getState().transcripts[threadId] ?? "").trim();
+  if (!transcript) return;
 
   controllers.get(threadId)?.abort();
   const ctrl = new AbortController();
@@ -71,7 +66,18 @@ export async function propose(threadId: string) {
     dropped: [],
     basedOn: transcript,
   };
-  s.setProposal(threadId, base);
+  // Show progress right away; the user may hit draft while the thread is still being read.
+  useDemo.getState().setProposal(threadId, base);
+  await analyze(threadId);
+  if (ctrl.signal.aborted) return;
+
+  const s = useDemo.getState();
+  const thread = s.threads.find((t) => t.id === threadId);
+  const analysis = s.analyses[threadId];
+  if (!thread || analysis?.status !== "ready") {
+    s.setProposal(threadId, { ...base, status: "error", error: "Couldn't read this thread yet. Try again in a moment." });
+    return;
+  }
   // A new proposal replaces old action ids; clear their statuses for this thread.
   useDemo.setState((st) => ({
     actionStatus: Object.fromEntries(

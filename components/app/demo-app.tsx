@@ -245,11 +245,13 @@ export function DemoApp() {
                     busy={busy}
                     hasDraft={Boolean(proposal)}
                     stale={stale}
-                    disabled={analysis?.status !== "ready"}
+                    disabled={analysis?.status === "error"}
                     disabledReason={
                       analysis?.status === "error"
-                        ? "Read the thread first, then answer."
-                        : "Reading the thread…"
+                        ? "Read the thread again (right panel), then draft."
+                        : analysis?.status === "loading"
+                          ? "Reading the thread… you can start talking now."
+                          : undefined
                     }
                   />
                 </div>

@@ -76,7 +76,6 @@ export const Composer = forwardRef<
             ref={ref}
             value={value}
             maxLength={LIMITS.transcript}
-            disabled={disabled}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             onChange={(e) => onChange(e.target.value)}
@@ -88,13 +87,13 @@ export const Composer = forwardRef<
             }}
             rows={3}
             placeholder="Hold your Wispr Flow key and talk. Answer in any order; say “no wait” to correct yourself."
-            className="field-sizing-content max-h-64 min-h-[5.5rem] w-full resize-none bg-transparent pt-2 text-[1.05rem] leading-relaxed text-ink outline-none placeholder:text-mute disabled:opacity-60"
+            className="field-sizing-content max-h-64 min-h-[5.5rem] w-full resize-none bg-transparent pt-2 text-[1.05rem] leading-relaxed text-ink outline-none placeholder:text-mute"
           />
         </div>
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
         <p className="flex items-center gap-1.5 text-xs text-mute">
-          {disabled && disabledReason ? (
+          {disabledReason ? (
             disabledReason
           ) : (
             <>
