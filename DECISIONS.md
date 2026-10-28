@@ -44,3 +44,9 @@ Small calls made while building, newest at the bottom of each section.
 
 ## Dictation hotkey
 - Wispr Flow's shortcut is user-configurable, so the app never asserts one. The composer says "Hold your Flow key", shows the platform default (fn on macOS, Ctrl + Win on Windows) labelled as the default, and offers "Set your key" to record the user's own combo. The choice is kept in this browser only (localStorage, wrapped in try/catch).
+
+## Polish (milestone 7)
+- **Landing performance:** scroll reveals, waveform, navbar menu and teaser use CSS instead of the animation library; the hero loop loads after `load` + idle; FAQ uses native `<details>`; toast and tooltip providers live in the app shell only. Lighthouse on production (29 Oct 2026, this machine): desktop 99/100/100/100; mobile performance 70–80 with accessibility, best practices and SEO at 100. The remaining mobile cost is React + Next.js hydration (~224 KB chunk) under 4x CPU throttling. PageSpeed Insights could not be run (shared API quota exhausted).
+- **Screenshots** are captured from the deployed demo with the real model and Duffel test mode (`npm run screenshots`), never mocked, and only show the fictional inbox.
+- **Smoke tests** stub the two LLM endpoints and freeze the browser clock so they are free and deterministic; real-model behaviour is covered by `npm run test:live`.
+- **License:** MIT.
