@@ -21,7 +21,13 @@ export async function POST(req: Request) {
     const code = err instanceof LLMError ? err.code : "provider";
     log("analyze", { ok: false, ms: Date.now() - started, code });
     return json(
-      { error: code, message: "Couldn't read this thread just now. Try again in a moment." },
+      {
+        error: code,
+        message:
+          code === "not_configured"
+            ? "The AI model isn't configured on this server. Set GEMINI_API_KEY in .env.local and restart."
+            : "Couldn't read this thread just now. Try again in a moment.",
+      },
       code === "not_configured" ? 503 : 502,
     );
   }

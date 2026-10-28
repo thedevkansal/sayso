@@ -46,7 +46,14 @@ export async function POST(req: Request) {
       } catch (err) {
         const code = err instanceof LLMError ? err.code : "provider";
         log("propose", { ok: false, ms: Date.now() - started, code });
-        send({ type: "error", code, message: "Couldn't draft a reply just now. Your words are still here; try again." });
+        send({
+          type: "error",
+          code,
+          message:
+            code === "not_configured"
+              ? "The AI model isn't configured on this server. Set GEMINI_API_KEY in .env.local and restart."
+              : "Couldn't draft a reply just now. Your words are still here; try again.",
+        });
       } finally {
         controller.close();
       }
