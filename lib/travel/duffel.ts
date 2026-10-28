@@ -82,6 +82,8 @@ export type FlightOffer = {
   amount: string;
   currency: string;
   expiresAt: string;
+  /** Duffel Airways: the one test carrier that always accepts orders. */
+  reliable?: boolean;
 };
 
 function isoDurationToMinutes(d: string | null) {
@@ -141,7 +143,8 @@ export async function searchFlights(q: {
     timeoutMs: 25_000,
   });
 
-  let offers = data.offers.filter((o) => !o.live_mode);
+  const all = data.offers.filter((o) => !o.live_mode);
+  let offers = all;
   // Suppliers don't all honour departure_time (Duffel's test content ignores it), so filter again here.
   if (q.timeOfDay !== "any") {
     const { from, to } = WINDOWS[q.timeOfDay];
@@ -151,16 +154,30 @@ export async function searchFlights(q: {
     });
     if (inWindow.length) offers = inWindow;
   }
-  // Cheapest first, then the five most useful distinct departures.
-  offers.sort((a, b) => Number(a.total_amount) - Number(b.total_amount));
+
+  // In test mode only Duffel Airways (ZZ) reliably books; other carriers' test fares (Air India
+  // especially, which floods results) often refuse orders. Lead with ZZ, even outside the
+  // requested window, then other carriers by price, with Air India capped so it can't crowd out the rest.
+  const zz = offers.find((o) => o.owner.iata_code === "ZZ") ?? all.find((o) => o.owner.iata_code === "ZZ") ?? null;
+  const rest = offers
+    .filter((o) => o !== zz)
+    .sort(
+      (a, b) =>
+        Number(a.owner.iata_code === "AI") - Number(b.owner.iata_code === "AI") ||
+        Number(a.total_amount) - Number(b.total_amount),
+    );
+
   const seen = new Set<string>();
   const out: FlightOffer[] = [];
-  for (const o of offers) {
+  let aiCount = 0;
+  for (const o of zz ? [zz, ...rest] : rest) {
+    if (o.owner.iata_code === "AI" && aiCount >= 2) continue;
     const f = simplify(o);
     const key = `${f.departAt}-${f.flightNumbers.join()}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push(f);
+    if (o.owner.iata_code === "AI") aiCount++;
+    out.push({ ...f, reliable: o.owner.iata_code === "ZZ" });
     if (out.length === 5) break;
   }
   return out;

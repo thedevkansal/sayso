@@ -206,12 +206,15 @@ type FlightOffer = {
   stops: number;
   amount: string;
   currency: string;
+  reliable?: boolean;
+  /** Set client-side when the airline's test system refused this fare. */
+  unavailable?: boolean;
 };
 
 type FlightState =
   | { step: "idle" }
   | { step: "searching" }
-  | { step: "results"; offers: FlightOffer[]; selected: string | null }
+  | { step: "results"; offers: FlightOffer[]; selected: string | null; notice?: string }
   | { step: "booking"; offers: FlightOffer[]; selected: string }
   | { step: "error"; message: string; offers?: FlightOffer[] };
 
@@ -259,7 +262,12 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
         passengers: action.passengers,
       });
       if (!data.offers.length) setFlight({ step: "error", message: "No test flights for that day. Try another time of day." });
-      else setFlight({ step: "results", offers: data.offers, selected: data.offers[0].id });
+      else
+        setFlight({
+          step: "results",
+          offers: data.offers,
+          selected: (data.offers.find((o: FlightOffer) => o.reliable) ?? data.offers[0]).id,
+        });
     } catch (e) {
       setFlight({ step: "error", message: e instanceof Error ? e.message : "Search failed." });
     }
@@ -283,10 +291,23 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
       toast.success("Test booking confirmed", { description: `Ref ${data.reference}. No payment taken.` });
     } catch (e) {
       const code = (e as { code?: string }).code ?? "";
-      // Fares move; rather than strand the user, fetch fresh ones and say why.
-      if (["offer_no_longer_available", "price_changed", "offer_expired", "offer_request_already_booked"].includes(code)) {
-        toast.info("That fare just changed", { description: "Here are fresh fares. Pick one to book." });
+      if (code === "offer_request_already_booked" || code === "offer_expired") {
         await search();
+        return;
+      }
+      // The airline's test system refused this fare (common for non-Duffel test carriers).
+      // Keep the list, mark the fare, and move the selection to one that will book.
+      if (code === "offer_no_longer_available" || code === "price_changed") {
+        const next = offers.map((o) => (o.id === selected ? { ...o, unavailable: true } : o));
+        const fallback = next.find((o) => !o.unavailable && o.reliable) ?? next.find((o) => !o.unavailable);
+        setFlight({
+          step: "results",
+          offers: next,
+          selected: fallback?.id ?? null,
+          notice: fallback
+            ? `That fare isn't bookable in the airline's test system. ${fallback.reliable ? "Duffel Airways always books in test mode, so it's selected now." : "Pick another fare."}`
+            : "None of these fares can be booked in the test system right now. Search again.",
+        });
         return;
       }
       setFlight({ step: "error", message: e instanceof Error ? e.message : "Booking failed.", offers });
@@ -335,8 +356,12 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
                       className={cn(
-                        "flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition-colors",
-                        checked ? "border-ink bg-surface-2" : "border-line hover:border-line-strong",
+                        "flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition-colors",
+                        o.unavailable
+                          ? "cursor-not-allowed border-dashed border-line opacity-55"
+                          : checked
+                            ? "cursor-pointer border-ink bg-surface-2"
+                            : "cursor-pointer border-line hover:border-line-strong",
                       )}
                     >
                       <input
@@ -344,6 +369,7 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
                         name={`fare-${key}`}
                         className="sr-only"
                         checked={checked}
+                        disabled={o.unavailable}
                         onChange={() => flight.step === "results" && setFlight({ ...flight, selected: o.id })}
                       />
                       {o.logo ? (
@@ -359,6 +385,11 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
                         <span className="block truncate text-xs text-mute">
                           {o.airline} · {hm(o.durationMinutes)} · {o.stops === 0 ? "Nonstop" : `${o.stops} stop`}
                         </span>
+                        {o.unavailable ? (
+                          <span className="block text-[11px] font-medium text-risk">Not available in test mode</span>
+                        ) : o.reliable ? (
+                          <span className="block text-[11px] font-medium text-ok">Always books in test mode</span>
+                        ) : null}
                       </span>
                       <span className="font-medium text-ink tabular-nums">{money(o.amount, o.currency)}</span>
                     </motion.label>
@@ -368,6 +399,11 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
             </fieldset>
           )}
 
+          {flight.step === "results" && flight.notice && (
+            <p role="status" className="mt-3 rounded-xl bg-warn-soft p-3 text-sm text-warn">
+              {flight.notice}
+            </p>
+          )}
           {flight.step === "error" && <p className="mt-3 rounded-xl bg-risk-soft p-3 text-sm text-risk">{flight.message}</p>}
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
