@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import type { Ask, Fact } from "@/lib/schemas";
 import type { AnalysisState, ProposalState } from "@/lib/store/demo";
-import { useDemo } from "@/lib/store/demo";
+import { useApp } from "@/lib/store/demo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { CalendarCard, SendCard, TravelCard } from "./action-cards";
@@ -260,8 +260,8 @@ function FactList({ facts }: { facts: (Fact & { verified: boolean })[] }) {
 }
 
 function DraftSection({ threadId, proposal }: { threadId: string; proposal: ProposalState }) {
-  const setBody = useDemo((s) => s.setReplyBody);
-  const sent = useDemo((s) => s.actionStatus[`${threadId}:send`] === "done");
+  const setBody = useApp((s) => s.setReplyBody);
+  const sent = useApp((s) => s.actionStatus[`${threadId}:send`] === "done");
   const streaming = proposal.status === "drafting";
   const thinking = proposal.status === "thinking";
 

@@ -3,20 +3,20 @@
 import { useMemo, useState } from "react";
 import { Inbox as InboxIcon, Send, ShieldAlert, Star } from "lucide-react";
 import { motion } from "motion/react";
-import { useDemo } from "@/lib/store/demo";
+import { useApp } from "@/lib/store/demo";
 import { detectInjection } from "@/lib/pipeline/guards";
 import { inboxTime } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./avatar";
 
 export function InboxPane({ onOpen }: { onOpen: (id: string) => void }) {
-  const threads = useDemo((s) => s.threads);
-  const sent = useDemo((s) => s.sent);
-  const selectedId = useDemo((s) => s.selectedId);
-  const analyses = useDemo((s) => s.analyses);
-  const proposals = useDemo((s) => s.proposals);
-  const actionStatus = useDemo((s) => s.actionStatus);
-  const tz = useDemo((s) => s.tz);
+  const threads = useApp((s) => s.threads);
+  const sent = useApp((s) => s.sent);
+  const selectedId = useApp((s) => s.selectedId);
+  const analyses = useApp((s) => s.analyses);
+  const proposals = useApp((s) => s.proposals);
+  const actionStatus = useApp((s) => s.actionStatus);
+  const tz = useApp((s) => s.tz);
   const [tab, setTab] = useState<"inbox" | "sent">("inbox");
   const now = useMemo(() => new Date(), []);
   const unread = threads.filter((t) => t.unread).length;
@@ -97,8 +97,8 @@ export function InboxPane({ onOpen }: { onOpen: (id: string) => void }) {
 }
 
 function SentList() {
-  const sent = useDemo((s) => s.sent);
-  const tz = useDemo((s) => s.tz);
+  const sent = useApp((s) => s.sent);
+  const tz = useApp((s) => s.tz);
   const now = useMemo(() => new Date(), []);
   if (sent.length === 0)
     return (

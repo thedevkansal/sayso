@@ -1,6 +1,7 @@
 "use client";
 
-import { create } from "zustand";
+import { createContext, useContext } from "react";
+import { create, useStore, type StoreApi } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { Action, Ask, Coverage, Fact, UserProfile } from "@/lib/schemas";
 import { buildSeed, type CalendarEvent, type InboxThread } from "@/lib/seed";
@@ -44,7 +45,15 @@ export type Booking = {
   createdAt: string;
 };
 
+export type Mode = "demo" | "live";
+
+/** Live mode: who a reply goes to, resolved server-side from the thread's headers. */
+export type ReplyMeta = { replyTo: { name: string; email: string }; subject: string };
+
+export type InboxStatus = { status: "idle" | "loading" | "ready" } | { status: "error"; message: string; code?: string };
+
 type State = {
+  mode: Mode;
   version: number;
   seededAt: string;
   tz: string;
@@ -58,6 +67,10 @@ type State = {
   analyses: Record<string, AnalysisState>;
   proposals: Record<string, ProposalState>;
   actionStatus: Record<string, ActionStatus>;
+  /** Live mode only. */
+  inbox: InboxStatus;
+  loadedThreads: Record<string, "loading" | "ready" | "error">;
+  replyMeta: Record<string, ReplyMeta>;
 };
 
 type Api = {
@@ -68,16 +81,20 @@ type Api = {
   setReplyBody: (id: string, body: string) => void;
   setActionStatus: (key: string, s: ActionStatus) => void;
   addEvent: (e: CalendarEvent) => void;
-  sendReply: (threadId: string) => SentItem | null;
+  recordSent: (item: SentItem) => void;
   addBooking: (b: Booking) => void;
   reset: () => void;
 };
 
-const STORE_VERSION = 1;
+export type AppState = State & Api;
+export type AppStore = StoreApi<AppState>;
 
-function fresh(): State {
+const STORE_VERSION = 2;
+
+function freshDemo(): State {
   const seed = buildSeed(new Date(), DEFAULT_TZ);
   return {
+    mode: "demo",
     version: STORE_VERSION,
     seededAt: new Date().toISOString(),
     tz: seed.tz,
@@ -91,65 +108,80 @@ function fresh(): State {
     analyses: {},
     proposals: {},
     actionStatus: {},
+    inbox: { status: "ready" },
+    loadedThreads: {},
+    replyMeta: {},
   };
 }
 
-export const useDemo = create<State & Api>()(
-  persist(
-    (set, get) => ({
-      ...fresh(),
-      select: (id) =>
-        set((s) => ({
-          selectedId: id,
-          threads: id ? s.threads.map((t) => (t.id === id ? { ...t, unread: false } : t)) : s.threads,
-        })),
-      setTranscript: (id, text) => set((s) => ({ transcripts: { ...s.transcripts, [id]: text } })),
-      setAnalysis: (id, a) => set((s) => ({ analyses: { ...s.analyses, [id]: a } })),
-      setProposal: (id, p) =>
-        set((s) => ({
-          proposals: { ...s.proposals, [id]: typeof p === "function" ? p(s.proposals[id]) : p },
-        })),
-      setReplyBody: (id, body) =>
-        set((s) => (s.proposals[id] ? { proposals: { ...s.proposals, [id]: { ...s.proposals[id], replyBody: body } } } : s)),
-      setActionStatus: (key, st) => set((s) => ({ actionStatus: { ...s.actionStatus, [key]: st } })),
-      addEvent: (e) => set((s) => ({ events: [...s.events, e] })),
-      addBooking: (b) => set((s) => ({ bookings: [b, ...s.bookings] })),
-      sendReply: (threadId) => {
-        const s = get();
-        const thread = s.threads.find((t) => t.id === threadId);
-        const p = s.proposals[threadId];
-        if (!thread || !p || !p.replyBody.trim()) return null;
-        const last = thread.messages.at(-1)!;
-        const item: SentItem = {
-          id: `sent-${Date.now()}`,
-          threadId,
-          to: [last.from.email],
-          subject: p.replySubject,
-          body: p.replyBody,
-          sentAt: new Date().toISOString(),
-        };
-        set({
-          sent: [item, ...s.sent],
-          actionStatus: { ...s.actionStatus, [`${threadId}:send`]: "done" },
-        });
-        return item;
-      },
-      reset: () => set({ ...fresh() }),
+function freshLive(): State {
+  const tz =
+    typeof Intl !== "undefined" ? (Intl.DateTimeFormat().resolvedOptions().timeZone ?? DEFAULT_TZ) : DEFAULT_TZ;
+  return {
+    ...freshDemo(),
+    mode: "live",
+    tz,
+    user: { name: "", email: "" },
+    threads: [],
+    events: [],
+    inbox: { status: "idle" },
+  };
+}
+
+function actions(set: StoreApi<AppState>["setState"], fresh: () => State): Api {
+  return {
+    select: (id) =>
+      set((s) => ({
+        selectedId: id,
+        threads: id ? s.threads.map((t) => (t.id === id ? { ...t, unread: false } : t)) : s.threads,
+      })),
+    setTranscript: (id, text) => set((s) => ({ transcripts: { ...s.transcripts, [id]: text } })),
+    setAnalysis: (id, a) => set((s) => ({ analyses: { ...s.analyses, [id]: a } })),
+    setProposal: (id, p) =>
+      set((s) => ({ proposals: { ...s.proposals, [id]: typeof p === "function" ? p(s.proposals[id]) : p } })),
+    setReplyBody: (id, body) =>
+      set((s) => (s.proposals[id] ? { proposals: { ...s.proposals, [id]: { ...s.proposals[id], replyBody: body } } } : s)),
+    setActionStatus: (key, st) => set((s) => ({ actionStatus: { ...s.actionStatus, [key]: st } })),
+    addEvent: (e) => set((s) => ({ events: [...s.events.filter((x) => x.id !== e.id), e] })),
+    addBooking: (b) => set((s) => ({ bookings: [b, ...s.bookings] })),
+    recordSent: (item) =>
+      set((s) => ({
+        sent: [item, ...s.sent],
+        actionStatus: { ...s.actionStatus, [`${item.threadId}:send`]: "done" },
+      })),
+    reset: () => set({ ...fresh() }),
+  };
+}
+
+/** Demo: seeded fictional data, persisted in this browser. */
+export const useDemo = create<AppState>()(
+  persist((set) => ({ ...freshDemo(), ...actions(set, freshDemo) }), {
+    name: "sayso-demo",
+    version: STORE_VERSION,
+    storage: createJSONStorage(() => localStorage),
+    // Don't persist in-flight states; a reload mid-stream should come back clean.
+    partialize: (s) => ({
+      ...s,
+      analyses: Object.fromEntries(Object.entries(s.analyses).filter(([, a]) => a.status === "ready")),
+      proposals: Object.fromEntries(Object.entries(s.proposals).filter(([, p]) => p.status === "ready")),
     }),
-    {
-      name: "sayso-demo",
-      version: STORE_VERSION,
-      storage: createJSONStorage(() => localStorage),
-      // Don't persist in-flight states; a reload mid-stream should come back clean.
-      partialize: (s) => ({
-        ...s,
-        analyses: Object.fromEntries(Object.entries(s.analyses).filter(([, a]) => a.status === "ready")),
-        proposals: Object.fromEntries(Object.entries(s.proposals).filter(([, p]) => p.status === "ready")),
-      }),
-      migrate: () => fresh(),
-      skipHydration: true,
-    },
-  ),
+    migrate: () => freshDemo(),
+    skipHydration: true,
+  }),
 );
+
+/** Live: real Gmail and Calendar data, kept in memory only. Email content is never written to storage. */
+export const useLive = create<AppState>()((set) => ({ ...freshLive(), ...actions(set, freshLive) }));
+
+export const AppStoreContext = createContext<AppStore>(useDemo);
+
+/** Select from whichever store (demo or live) this part of the tree is using. */
+export function useApp<T>(selector: (s: AppState) => T): T {
+  return useStore(useContext(AppStoreContext), selector);
+}
+
+export function useAppApi(): AppStore {
+  return useContext(AppStoreContext);
+}
 
 export const actionKey = (threadId: string, actionId: string) => `${threadId}:${actionId}`;

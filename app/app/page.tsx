@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DemoApp } from "@/components/app/demo-app";
+import { AppShell } from "@/components/app/app-shell";
 
 export const metadata: Metadata = {
   title: "Demo inbox",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AppPage() {
-  return <DemoApp />;
+  return <AppShell mode="demo" />;
 }

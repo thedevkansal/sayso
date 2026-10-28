@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { addDays } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { CalendarDays, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
-import { actionKey, useDemo } from "@/lib/store/demo";
+import { actionKey, useApp } from "@/lib/store/demo";
 import { conflictsFor } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -21,10 +21,10 @@ function weekOf(day: string) {
 }
 
 function useCalendarEvents() {
-  const events = useDemo((s) => s.events);
-  const selectedId = useDemo((s) => s.selectedId);
-  const proposal = useDemo((s) => (s.selectedId ? s.proposals[s.selectedId] : undefined));
-  const actionStatus = useDemo((s) => s.actionStatus);
+  const events = useApp((s) => s.events);
+  const selectedId = useApp((s) => s.selectedId);
+  const proposal = useApp((s) => (s.selectedId ? s.proposals[s.selectedId] : undefined));
+  const actionStatus = useApp((s) => s.actionStatus);
 
   return useMemo(() => {
     const booked: GridEvent[] = events.map((e) => ({ ...e, kind: e.source }));
@@ -54,7 +54,7 @@ function useCalendarEvents() {
 }
 
 export function CalendarPanel() {
-  const tz = useDemo((s) => s.tz);
+  const tz = useApp((s) => s.tz);
   const { all, proposed, fromThread } = useCalendarEvents();
   const today = dayKey(new Date(), tz);
   const focusAt = proposed[0]?.startISO ?? fromThread?.startISO ?? null;

@@ -5,8 +5,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { AlertTriangle, CalendarPlus, Check, ExternalLink, Loader2, Mail, Plane, TrainFront, X } from "lucide-react";
 import type { CalendarAction, TravelAction } from "@/lib/schemas";
-import { actionKey, useDemo } from "@/lib/store/demo";
+import { actionKey, useApp, useAppApi } from "@/lib/store/demo";
 import { conflictsFor, nextFreeSlot } from "@/lib/calendar";
+import { bookEvent, sendReply } from "@/lib/client/pipeline";
 import { formatDay, formatRange, formatTime, zonedToISO } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
@@ -62,39 +63,63 @@ const secondaryBtn =
 const ghostBtn = "inline-flex h-9 items-center gap-1 rounded-full px-3 text-sm text-mute hover:bg-surface-2 hover:text-ink";
 
 export function SendCard({ threadId, disabled }: { threadId: string; disabled: boolean }) {
-  const p = useDemo((s) => s.proposals[threadId]);
-  const thread = useDemo((s) => s.threads.find((t) => t.id === threadId));
-  const status = useDemo((s) => s.actionStatus[`${threadId}:send`]);
-  const sendReply = useDemo((s) => s.sendReply);
+  const api = useAppApi();
+  const p = useApp((s) => s.proposals[threadId]);
+  const thread = useApp((s) => s.threads.find((t) => t.id === threadId));
+  const status = useApp((s) => s.actionStatus[`${threadId}:send`]);
+  const mode = useApp((s) => s.mode);
+  const replyTo = useApp((s) => s.replyMeta[threadId]?.replyTo);
+  const [sending, setSending] = useState(false);
   if (!p || !thread) return null;
-  const to = thread.messages.at(-1)!.from;
+  const to = mode === "live" ? replyTo : thread.messages.at(-1)!.from;
   const done = status === "done";
+  const live = mode === "live";
+
+  const send = async () => {
+    setSending(true);
+    try {
+      await sendReply(api, threadId);
+      toast.success("Reply sent", {
+        description: live ? `Sent from your Gmail to ${to?.email}.` : "Saved to Sent. In the demo nothing leaves your browser.",
+      });
+    } catch (e) {
+      toast.error("Couldn't send", { description: e instanceof Error ? e.message : "Try again." });
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <CardShell icon={Mail} title="Send reply" done={done} doneLabel="Sent">
       <dl className="grid grid-cols-[4.5rem_1fr] gap-y-1 text-sm">
         <dt className="text-mute">To</dt>
-        <dd className="truncate text-ink">
-          {to.name} &lt;{to.email}&gt;
-        </dd>
+        <dd className="truncate text-ink">{to ? `${to.name} <${to.email}>` : "Resolving recipient…"}</dd>
         <dt className="text-mute">Subject</dt>
         <dd className="truncate text-ink">{p.replySubject}</dd>
       </dl>
+      {live && !done && (
+        <div className="mt-3">
+          <p className="text-xs text-mute">Exactly this will be sent from your Gmail:</p>
+          <pre className="mt-1 max-h-48 overflow-y-auto rounded-xl border border-line bg-surface-2 p-3 font-sans text-sm whitespace-pre-wrap text-ink">
+            {p.replyBody}
+          </pre>
+        </div>
+      )}
       {!done && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button
             type="button"
             data-shortcut="send"
-            disabled={disabled || !p.replyBody.trim()}
+            disabled={disabled || sending || !p.replyBody.trim() || !to}
             className={primaryBtn}
-            onClick={() => {
-              const item = sendReply(threadId);
-              if (item) toast.success("Reply sent", { description: "Saved to Sent. In the demo nothing leaves your browser." });
-            }}
+            onClick={send}
           >
-            Send reply
+            {sending && <Loader2 className="size-4 animate-spin" />}
+            {sending ? "Sending…" : live ? "Send from Gmail" : "Send reply"}
           </button>
-          <span className="text-xs text-mute">Demo: goes to your in-app Sent folder</span>
+          <span className="text-xs text-mute">
+            {live ? "Real email. Goes out in this thread." : "Demo: goes to your in-app Sent folder"}
+          </span>
         </div>
       )}
     </CardShell>
@@ -103,11 +128,13 @@ export function SendCard({ threadId, disabled }: { threadId: string; disabled: b
 
 export function CalendarCard({ threadId, action }: { threadId: string; action: CalendarAction }) {
   const key = actionKey(threadId, action.id);
-  const status = useDemo((s) => s.actionStatus[key]);
-  const events = useDemo((s) => s.events);
-  const tz = useDemo((s) => s.tz);
-  const addEvent = useDemo((s) => s.addEvent);
-  const setStatus = useDemo((s) => s.setActionStatus);
+  const status = useApp((s) => s.actionStatus[key]);
+  const events = useApp((s) => s.events);
+  const tz = useApp((s) => s.tz);
+  const setStatus = useApp((s) => s.setActionStatus);
+  const live = useApp((s) => s.mode === "live");
+  const api = useAppApi();
+  const [booking, setBooking] = useState(false);
   const done = status === "done";
 
   const conflicts = useMemo(
@@ -121,13 +148,22 @@ export function CalendarCard({ threadId, action }: { threadId: string; action: C
 
   if (status === "dismissed") return <DismissedRow label="Calendar invite dismissed" onUndo={() => setStatus(key, "pending")} />;
 
-  const book = (startISO: string, endISO: string) => {
-    addEvent({ id: `ev-${key}`, title: action.title, startISO, endISO, source: "sayso", attendees: action.attendees });
+  const book = async (startISO: string, endISO: string) => {
+    setBooking(true);
+    let link: string | null | undefined;
+    try {
+      ({ htmlLink: link } = await bookEvent(api, { id: `ev-${key}`, title: action.title, startISO, endISO, attendees: action.attendees }));
+    } catch (e) {
+      toast.error("Couldn't add the event", { description: e instanceof Error ? e.message : "Try again." });
+      return;
+    } finally {
+      setBooking(false);
+    }
     setStatus(key, "done");
     const label = formatRange(startISO, endISO, tz);
     // Moved to another slot: keep the email in sync with what was actually booked.
     if (startISO !== action.startISO) {
-      const s = useDemo.getState();
+      const s = api.getState();
       const body = s.proposals[threadId]?.replyBody ?? "";
       const original = formatRange(action.startISO, action.endISO, tz);
       if (body.includes(original)) {
@@ -136,14 +172,22 @@ export function CalendarCard({ threadId, action }: { threadId: string; action: C
         toast.warning("Check the time in your draft", { description: `The call is now ${label}.` });
       }
     }
-    toast.success("Added to calendar", { description: label });
+    toast.success(live ? "Added to Google Calendar" : "Added to calendar", {
+      description: live && action.attendees.length ? `${label}. Invite emailed to ${action.attendees.join(", ")}.` : label,
+      action: link ? { label: "Open", onClick: () => window.open(link!, "_blank", "noopener") } : undefined,
+    });
   };
 
   return (
     <CardShell icon={CalendarPlus} title="Calendar invite" done={done} doneLabel="Added" tone={conflicts.length ? "warn" : "default"}>
       <p className="font-medium text-ink">{action.title}</p>
       <p className="mt-0.5 text-sm text-ink">{formatRange(action.startISO, action.endISO, tz)}</p>
-      {action.attendees.length > 0 && <p className="mt-1 text-xs text-mute">Invite: {action.attendees.join(", ")}</p>}
+      {action.attendees.length > 0 && (
+        <p className="mt-1 text-xs text-mute">
+          {live ? "Google will email an invite to " : "Invite: "}
+          {action.attendees.join(", ")}
+        </p>
+      )}
       <p className="mt-2 text-xs text-mute">From what you said: &ldquo;{action.sourceQuote}&rdquo;</p>
 
       {conflicts.length > 0 && (
@@ -166,16 +210,18 @@ export function CalendarCard({ threadId, action }: { threadId: string; action: C
         <div className="mt-4 flex flex-wrap gap-2">
           {alt ? (
             <>
-              <button type="button" className={primaryBtn} onClick={() => book(alt.startISO, alt.endISO)}>
+              <button type="button" disabled={booking} className={primaryBtn} onClick={() => book(alt.startISO, alt.endISO)}>
+                {booking && <Loader2 className="size-4 animate-spin" />}
                 Book {formatTime(alt.startISO, tz)} instead
               </button>
-              <button type="button" className={secondaryBtn} onClick={() => book(action.startISO, action.endISO)}>
+              <button type="button" disabled={booking} className={secondaryBtn} onClick={() => book(action.startISO, action.endISO)}>
                 Book anyway
               </button>
             </>
           ) : (
-            <button type="button" className={primaryBtn} onClick={() => book(action.startISO, action.endISO)}>
-              Add to calendar
+            <button type="button" disabled={booking} className={primaryBtn} onClick={() => book(action.startISO, action.endISO)}>
+              {booking && <Loader2 className="size-4 animate-spin" />}
+              {live ? "Add to Google Calendar" : "Add to calendar"}
             </button>
           )}
           <button type="button" className={ghostBtn} onClick={() => setStatus(key, "dismissed")}>
@@ -236,12 +282,12 @@ async function postJson(url: string, body: unknown) {
 
 export function TravelCard({ threadId, action }: { threadId: string; action: TravelAction }) {
   const key = actionKey(threadId, action.id);
-  const status = useDemo((s) => s.actionStatus[key]);
-  const booking = useDemo((s) => s.bookings.find((b) => b.id === `bk-${key}`));
-  const tz = useDemo((s) => s.tz);
-  const setStatus = useDemo((s) => s.setActionStatus);
-  const addBooking = useDemo((s) => s.addBooking);
-  const addEvent = useDemo((s) => s.addEvent);
+  const status = useApp((s) => s.actionStatus[key]);
+  const booking = useApp((s) => s.bookings.find((b) => b.id === `bk-${key}`));
+  const tz = useApp((s) => s.tz);
+  const setStatus = useApp((s) => s.setActionStatus);
+  const addBooking = useApp((s) => s.addBooking);
+  const addEvent = useApp((s) => s.addEvent);
   const [flight, setFlight] = useState<FlightState>({ step: "idle" });
 
   if (status === "dismissed") return <DismissedRow label="Travel search dismissed" onUndo={() => setStatus(key, "pending")} />;
