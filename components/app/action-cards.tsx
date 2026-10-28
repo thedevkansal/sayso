@@ -27,8 +27,9 @@ function CardShell({
   tone?: "default" | "warn";
 }) {
   return (
-    <motion.div
+    <motion.section
       layout
+      aria-label={title}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
@@ -52,7 +53,7 @@ function CardShell({
         </AnimatePresence>
       </div>
       <div className="p-4">{children}</div>
-    </motion.div>
+    </motion.section>
   );
 }
 
