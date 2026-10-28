@@ -28,5 +28,6 @@ Small calls made while building, newest at the bottom of each section.
 - **Weekday maths:** the prompt includes a 21-day table ("Friday 2026-10-30") so the model reads dates instead of computing them.
 
 ## Infra
-- **Rate limit + spend cap store:** Upstash Redis (free tier) via Vercel Marketplace; in-memory fallback when `UPSTASH_REDIS_REST_URL` is unset (local dev).
+- **Rate limit + spend cap store:** Upstash Redis **free plan** (500K commands/month, 250 MB), database `sayso` in us-east-1 next to the Vercel functions, auto-upgrade off so it can never bill. Created directly on Upstash; the Vercel Marketplace listing only offered paid plans. About 4 commands per LLM request. In-memory fallback when `UPSTASH_REDIS_REST_URL` is unset.
+- **Limits:** 20 LLM requests per IP per 10 minutes (sliding window) and a global daily spend cap (default $5 per UTC day) estimated from Gemini token usage. Over the cap the app shows "The demo is busy right now. Try again later."
 - **Deploy:** private GitHub repo + Vercel Git integration. Previews per push, `main` is production.
