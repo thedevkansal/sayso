@@ -5,12 +5,14 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Keyboard, LogOut, Mail, RefreshCw, RotateCcw } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { MotionConfig } from "motion/react";
 import { AppStoreContext, useApp, useAppApi, useDemo, useLive, type Mode } from "@/lib/store/demo";
 import { analyze, loadCalendar, loadInbox, propose } from "@/lib/client/pipeline";
 import { Logo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { InboxPane } from "./inbox";
 import { ThreadView } from "./thread-view";
@@ -39,7 +41,12 @@ function isTyping(el: EventTarget | null) {
 export function AppShell({ mode }: { mode: Mode }) {
   return (
     <AppStoreContext.Provider value={mode === "live" ? useLive : useDemo}>
-      <Shell />
+      <MotionConfig reducedMotion="user">
+        <TooltipProvider>
+          <Shell />
+          <Toaster position="bottom-right" />
+        </TooltipProvider>
+      </MotionConfig>
     </AppStoreContext.Provider>
   );
 }

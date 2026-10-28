@@ -173,6 +173,55 @@
   }
 }
 
+/* Scroll reveal: hidden state only once JS has flagged the element as observed-but-not-shown. */
+.reveal {
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s);
+}
+.js .reveal:not([data-shown]) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+/* Waveform bars */
+.wave-bar {
+  transform: scaleY(calc(var(--h) * 0.6));
+  transition: transform 0.3s ease;
+}
+.wave:not(.wave-active) .wave-bar {
+  transform: scaleY(0.12);
+}
+.wave-active .wave-bar {
+  animation: wave var(--d) ease-in-out var(--delay) infinite;
+}
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(calc(var(--h) * 0.35));
+  }
+  25% {
+    transform: scaleY(var(--h));
+  }
+  50% {
+    transform: scaleY(calc(var(--h) * 0.5));
+  }
+  75% {
+    transform: scaleY(calc(var(--h) * 0.85));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal:not([data-shown]) {
+    opacity: 1;
+    transform: none;
+  }
+  .wave-active .wave-bar {
+    animation: none;
+    transform: scaleY(var(--h));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

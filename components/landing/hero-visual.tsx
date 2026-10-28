@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "motion/react";
 import { CalendarClock, Check, CircleAlert, CornerDownLeft, Mail } from "lucide-react";
 import { Waveform } from "@/components/site/waveform";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,14 @@ const WORDS = TRANSCRIPT.split(" ");
  * the two unanswered ones get flagged, then the draft and the calendar card appear.
  */
 export function HeroVisual() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <HeroLoop />
+    </MotionConfig>
+  );
+}
+
+function HeroLoop() {
   const reduce = useReducedMotion();
   const [tick, setTick] = useState(0);
   const total = WORDS.length + 14;

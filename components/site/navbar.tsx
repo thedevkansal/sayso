@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -56,40 +55,34 @@ export function Navbar() {
           </button>
         </div>
       </nav>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            id="mobile-nav"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-            className="mx-auto mt-2 max-w-5xl rounded-3xl border border-line bg-surface p-2 shadow-float md:hidden"
-          >
-            <ul>
-              {links.map((l) => (
-                <li key={l.href}>
-                  <Link
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-2xl px-4 py-3 text-ink-2 hover:bg-surface-2 hover:text-ink"
-                  >
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-              <li className="p-1">
+      {open && (
+        <div
+          id="mobile-nav"
+          className="mx-auto mt-2 max-w-5xl animate-in rounded-3xl border border-line bg-surface p-2 shadow-float fade-in slide-in-from-top-2 duration-200 md:hidden"
+        >
+          <ul>
+            {links.map((l) => (
+              <li key={l.href}>
                 <Link
-                  href="/app"
-                  className="flex h-11 items-center justify-center rounded-full bg-ink text-sm font-medium text-primary-foreground"
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-2xl px-4 py-3 text-ink-2 hover:bg-surface-2 hover:text-ink"
                 >
-                  Try the demo
+                  {l.label}
                 </Link>
               </li>
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ))}
+            <li className="p-1">
+              <Link
+                href="/app"
+                className="flex h-11 items-center justify-center rounded-full bg-ink text-sm font-medium text-primary-foreground"
+              >
+                Try the demo
+              </Link>
+            </li>
+          </ul>
+        </div>
+      )}
     </header>
   );
 }

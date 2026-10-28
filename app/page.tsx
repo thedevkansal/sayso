@@ -13,7 +13,7 @@ import {
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Reveal } from "@/components/site/reveal";
-import { HeroVisual } from "@/components/landing/hero-visual";
+import { HeroVisualLazy } from "@/components/landing/hero-visual-lazy";
 import { Teaser } from "@/components/landing/teaser";
 import { Faq } from "@/components/landing/faq";
 
@@ -75,7 +75,7 @@ function Hero() {
         </div>
         <p className="mt-4 text-sm text-mute">No sign-up. Fictional inbox. Runs in your browser.</p>
         <div className="mt-16">
-          <HeroVisual />
+          <HeroVisualLazy />
         </div>
       </div>
     </section>
