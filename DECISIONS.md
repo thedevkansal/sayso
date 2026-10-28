@@ -31,3 +31,12 @@ Small calls made while building, newest at the bottom of each section.
 - **Rate limit + spend cap store:** Upstash Redis **free plan** (500K commands/month, 250 MB), database `sayso` in us-east-1 next to the Vercel functions, auto-upgrade off so it can never bill. Created directly on Upstash; the Vercel Marketplace listing only offered paid plans. About 4 commands per LLM request. In-memory fallback when `UPSTASH_REDIS_REST_URL` is unset.
 - **Limits:** 20 LLM requests per IP per 10 minutes (sliding window) and a global daily spend cap (default $5 per UTC day) estimated from Gemini token usage. Over the cap the app shows "The demo is busy right now. Try again later."
 - **Deploy:** private GitHub repo + Vercel Git integration. Previews per push, `main` is production.
+
+## Travel
+- **Flights: Duffel v2 API in test mode only**, plain fetch (no SDK). The server refuses any token that doesn't start with `duffel_test_` and any offer with `live_mode: true`. Flow: offer request (time-of-day window mapped to `departure_time` from/to) → top 5 distinct offers by price → user picks → re-fetch offer for a current price and expiry → instant order paid from the test balance. Labelled "Test booking — no payment taken" on the card and in the confirmation.
+- **Passenger:** a fixed fictional traveller (Asha Menon) on the server. No personal data or card details are ever collected.
+- **Booked flights** are added to the in-app calendar.
+- **Trains:** prefilled search link only, no automation.
+
+## Calendar
+- Replaced the agenda list with a real time grid: hour and half-hour lines, events positioned by time with Google-style lanes for overlaps, a red now-line, and the proposed invite drawn as a dashed block (red when it clashes). The side panel shows a day view with a Monday-start week strip and jumps to the proposal's day; a week view opens in a dialog.
