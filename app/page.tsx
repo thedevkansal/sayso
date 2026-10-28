@@ -55,8 +55,8 @@ function Hero() {
           and drafts the email. Nothing goes out until you click.
         </p>
         <p className="mt-6 flex flex-wrap items-center justify-center gap-2 text-ink-2">
-          Hold
-          <span className="kbd h-8 px-3 text-sm">fn</span>
+          Hold your
+          <span className="kbd h-8 px-3 text-sm">Wispr Flow key</span>
           and talk through a reply
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

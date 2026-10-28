@@ -6,14 +6,13 @@ import { CornerDownLeft, Loader2, RotateCw } from "lucide-react";
 import { Waveform } from "@/components/site/waveform";
 import { LIMITS } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
+import { FlowKeyHint } from "./flow-key";
 
 // The app shell only renders after client hydration, so navigator is available here.
-function useHotkeyLabel() {
-  const [label] = useState(() => {
-    const mac = typeof navigator === "undefined" || /Mac|iPhone|iPad/.test(navigator.userAgent);
-    // Wispr Flow defaults: fn on macOS, Ctrl + Win on Windows.
-    return mac ? { flow: ["fn"], submit: "⌘" } : { flow: ["Ctrl", "Win"], submit: "Ctrl" };
-  });
+function useSubmitKey() {
+  const [label] = useState(() =>
+    typeof navigator === "undefined" || /Mac|iPhone|iPad/.test(navigator.userAgent) ? "⌘" : "Ctrl",
+  );
   return label;
 }
 
@@ -30,7 +29,7 @@ export const Composer = forwardRef<
     disabledReason?: string;
   }
 >(function Composer({ value, onChange, onSubmit, busy, hasDraft, stale, disabled, disabledReason }, ref) {
-  const keys = useHotkeyLabel();
+  const submitKey = useSubmitKey();
   const [burst, setBurst] = useState(false);
   const [focused, setFocused] = useState(false);
   const prevLen = useRef(value.length);
@@ -92,21 +91,7 @@ export const Composer = forwardRef<
         </div>
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
-        <p className="flex items-center gap-1.5 text-xs text-mute">
-          {disabledReason ? (
-            disabledReason
-          ) : (
-            <>
-              Hold
-              {keys.flow.map((k) => (
-                <kbd key={k} className="kbd">
-                  {k}
-                </kbd>
-              ))}
-              to dictate with Wispr Flow, or just type
-            </>
-          )}
-        </p>
+        <div className="text-xs text-mute">{disabledReason ? <p>{disabledReason}</p> : <FlowKeyHint />}</div>
         <button
           type="button"
           onClick={onSubmit}
@@ -117,7 +102,7 @@ export const Composer = forwardRef<
           {label}
           {!busy && (
             <span className="hidden items-center gap-0.5 rounded-md bg-primary-foreground/15 px-1.5 py-0.5 text-[11px] sm:inline-flex">
-              {keys.submit} <CornerDownLeft className="size-3" />
+              {submitKey} <CornerDownLeft className="size-3" />
             </span>
           )}
         </button>

@@ -40,3 +40,7 @@ Small calls made while building, newest at the bottom of each section.
 
 ## Calendar
 - Replaced the agenda list with a real time grid: hour and half-hour lines, events positioned by time with Google-style lanes for overlaps, a red now-line, and the proposed invite drawn as a dashed block (red when it clashes). The side panel shows a day view with a Monday-start week strip and jumps to the proposal's day; a week view opens in a dialog.
+- **Calendar hours:** working-hours window 10 am–5 pm at 40px per hour, no inner scroll. A day stretches only as far as needed to show an event outside that window (e.g. the 5 pm call, an early flight), so nothing the demo depends on is hidden.
+
+## Dictation hotkey
+- Wispr Flow's shortcut is user-configurable, so the app never asserts one. The composer says "Hold your Flow key", shows the platform default (fn on macOS, Ctrl + Win on Windows) labelled as the default, and offers "Set your key" to record the user's own combo. The choice is kept in this browser only (localStorage, wrapped in try/catch).

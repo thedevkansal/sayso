@@ -179,7 +179,7 @@ export function HeroVisual() {
               <div className="text-xs leading-tight">
                 <p className="font-medium text-ink">{listening ? "Listening via Wispr Flow" : "Got it"}</p>
                 <p className="text-mute">
-                  Hold <span className="kbd">fn</span> and talk
+                  Hold your <span className="kbd">Flow key</span> and talk
                 </p>
               </div>
             </div>

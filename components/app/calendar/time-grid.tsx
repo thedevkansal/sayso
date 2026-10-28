@@ -68,8 +68,8 @@ export function TimeGrid({
   days,
   events,
   tz,
-  startHour = 7,
-  endHour = 21,
+  startHour: baseStart = 10,
+  endHour: baseEnd = 17,
   hourHeight = 48,
   scrollTo,
   showDayHeaders = true,
@@ -87,6 +87,18 @@ export function TimeGrid({
   className?: string;
 }) {
   const pxPerMin = hourHeight / 60;
+  // Working-hours window by default; stretch only as far as needed to show events outside it.
+  const { startHour, endHour } = useMemo(() => {
+    let start = baseStart;
+    let end = baseEnd;
+    for (const e of events) {
+      if (!days.includes(formatInTimeZone(new Date(e.startISO), tz, "yyyy-MM-dd"))) continue;
+      start = Math.min(start, Math.floor(minutesOfDay(e.startISO, tz) / 60));
+      const endMins = minutesOfDay(e.endISO, tz);
+      end = Math.max(end, Math.min(24, Math.ceil((endMins === 0 ? 24 * 60 : endMins) / 60)));
+    }
+    return { startHour: start, endHour: end };
+  }, [events, days, tz, baseStart, baseEnd]);
   const scroller = useRef<HTMLDivElement>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -141,7 +153,7 @@ export function TimeGrid({
       )}
 
       <div ref={scroller} className="relative min-h-0 flex-1 overflow-y-auto">
-        <div className="relative flex" style={{ height: totalHeight }}>
+        <div className="relative my-2 flex" style={{ height: totalHeight }}>
           {/* hour gutter */}
           <div className="relative w-12 shrink-0" aria-hidden>
             {hours.map((h, i) => (
@@ -150,9 +162,15 @@ export function TimeGrid({
                 className="absolute right-2 -translate-y-1/2 text-[10px] text-mute tabular-nums"
                 style={{ top: i * hourHeight }}
               >
-                {i === 0 ? "" : hourLabel(h)}
+                {hourLabel(h)}
               </span>
             ))}
+            <span
+              className="absolute right-2 -translate-y-1/2 text-[10px] text-mute tabular-nums"
+              style={{ top: totalHeight }}
+            >
+              {hourLabel(endHour)}
+            </span>
           </div>
 
           <div
@@ -160,7 +178,7 @@ export function TimeGrid({
             style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
           >
             {/* hour and half-hour lines */}
-            <div className="pointer-events-none absolute inset-0" aria-hidden>
+            <div className="pointer-events-none absolute inset-0 border-b border-line" aria-hidden>
               {hours.map((h, i) => (
                 <div key={h}>
                   <div className="absolute inset-x-0 border-t border-line" style={{ top: i * hourHeight }} />
