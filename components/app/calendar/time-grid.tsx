@@ -104,7 +104,7 @@ export function TimeGrid({
     const el = scroller.current;
     if (!el) return;
     const target = scrollTo ?? new Date(now).toISOString();
-    const mins = minutesOfDay(target, tz) - startHour * 60 - 60;
+    const mins = minutesOfDay(target, tz) - startHour * 60 - 120;
     el.scrollTo({ top: Math.max(0, mins * pxPerMin), behavior: "smooth" });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-scroll when the target changes
   }, [scrollTo, days.join()]);
@@ -164,7 +164,9 @@ export function TimeGrid({
               {hours.map((h, i) => (
                 <div key={h}>
                   <div className="absolute inset-x-0 border-t border-line" style={{ top: i * hourHeight }} />
-                  <div className="absolute inset-x-0 border-t border-dashed border-line/60" style={{ top: i * hourHeight + hourHeight / 2 }} />
+                  {hourHeight >= 44 && (
+                    <div className="absolute inset-x-0 border-t border-dashed border-line/60" style={{ top: i * hourHeight + hourHeight / 2 }} />
+                  )}
                 </div>
               ))}
             </div>
@@ -199,7 +201,7 @@ export function TimeGrid({
 }
 
 function EventBlock({ e, tz }: { e: Placed; tz: string }) {
-  const short = e.height < 34;
+  const short = e.height < 40;
   const gap = 2;
   return (
     <motion.div
@@ -220,7 +222,7 @@ function EventBlock({ e, tz }: { e: Placed; tz: string }) {
       )}
       style={{
         top: e.top + 1,
-        height: Math.max(e.height - gap, 16),
+        height: Math.max(e.height - gap, 15),
         left: `calc(${(e.lane / e.lanes) * 100}% + 2px)`,
         width: `calc(${100 / e.lanes}% - 4px)`,
       }}

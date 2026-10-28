@@ -151,7 +151,7 @@ export function CalendarPanel() {
         {formatInTimeZone(fromKey(day), "UTC", "EEEE d MMMM")}
         {day === today && <span className="ml-1.5 text-signal">Today</span>}
       </p>
-      <TimeGrid days={[day]} events={all} tz={tz} hourHeight={60} scrollTo={scrollTarget} className="h-[26rem] pr-2 pb-2" />
+      <TimeGrid days={[day]} events={all} tz={tz} hourHeight={34} scrollTo={scrollTarget} className="h-[24rem] pr-2 pb-2" />
 
       <Dialog open={weekOpen} onOpenChange={setWeekOpen}>
         <DialogContent className="flex h-[min(88dvh,52rem)] w-[min(96vw,72rem)] max-w-none flex-col gap-0 p-0 sm:max-w-none">
@@ -181,7 +181,7 @@ export function CalendarPanel() {
               </button>
             </div>
           </div>
-          <TimeGrid days={week} events={all} tz={tz} hourHeight={52} scrollTo={scrollTarget} className="min-h-0 flex-1" />
+          <TimeGrid days={week} events={all} tz={tz} hourHeight={40} scrollTo={scrollTarget} className="min-h-0 flex-1" />
         </DialogContent>
       </Dialog>
     </section>
