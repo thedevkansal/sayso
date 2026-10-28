@@ -140,7 +140,7 @@ export async function getThread(token: string, id: string, me: string): Promise<
     thread,
     reply: {
       replyTo: parseAddress(replyToRaw),
-      subject: /^re:/i.test(subject) ? subject : `Re: ${subject}`,
+      subject: /^re:/i.test(subject) ? subject : `Re: ${subject.trim() || "(no subject)"}`,
       messageId: header(lastFromOther, "Message-ID") || header(lastFromOther, "Message-Id"),
       references: [header(lastFromOther, "References"), header(lastFromOther, "Message-ID")].filter(Boolean).join(" "),
       participants: [...participants],
