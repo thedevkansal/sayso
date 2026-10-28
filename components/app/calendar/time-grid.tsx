@@ -68,7 +68,7 @@ export function TimeGrid({
   days,
   events,
   tz,
-  startHour = 7,
+  startHour = 6,
   endHour = 22,
   hourHeight = 48,
   scrollTo,

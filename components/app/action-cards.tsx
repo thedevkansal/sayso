@@ -389,7 +389,11 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
             </button>
           </div>
           {action.mode === "flight" && (
-            <p className="mt-2 text-xs text-mute">Test booking — no payment taken. Uses Duffel&apos;s test environment.</p>
+            <p className="mt-2 text-xs text-mute" aria-live="polite">
+              {flight.step === "booking"
+                ? "Confirming with the airline's test system. This can take up to 30 seconds."
+                : "Test booking — no payment taken. Uses Duffel's test environment."}
+            </p>
           )}
         </>
       )}

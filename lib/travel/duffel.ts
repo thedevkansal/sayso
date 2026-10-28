@@ -141,7 +141,16 @@ export async function searchFlights(q: {
     timeoutMs: 25_000,
   });
 
-  const offers = data.offers.filter((o) => !o.live_mode);
+  let offers = data.offers.filter((o) => !o.live_mode);
+  // Suppliers don't all honour departure_time (Duffel's test content ignores it), so filter again here.
+  if (q.timeOfDay !== "any") {
+    const { from, to } = WINDOWS[q.timeOfDay];
+    const inWindow = offers.filter((o) => {
+      const t = o.slices[0].segments[0].departing_at.slice(11, 16);
+      return t >= from && t <= to;
+    });
+    if (inWindow.length) offers = inWindow;
+  }
   // Cheapest first, then the five most useful distinct departures.
   offers.sort((a, b) => Number(a.total_amount) - Number(b.total_amount));
   const seen = new Set<string>();

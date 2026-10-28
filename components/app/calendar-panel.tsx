@@ -47,15 +47,18 @@ function useCalendarEvents() {
             )
             .filter((x): x is NonNullable<typeof x> => x !== null)
         : [];
-    return { all: [...booked, ...proposed], proposed, booked };
+    // Something this thread just booked (a call or a flight), most recent first.
+    const fromThread = selectedId ? events.filter((e) => e.id.startsWith(`ev-${selectedId}:`)).at(-1) : undefined;
+    return { all: [...booked, ...proposed], proposed, booked, fromThread };
   }, [events, proposal, selectedId, actionStatus]);
 }
 
 export function CalendarPanel() {
   const tz = useDemo((s) => s.tz);
-  const { all, proposed } = useCalendarEvents();
+  const { all, proposed, fromThread } = useCalendarEvents();
   const today = dayKey(new Date(), tz);
-  const focusDay = proposed[0] ? dayKey(new Date(proposed[0].startISO), tz) : today;
+  const focusAt = proposed[0]?.startISO ?? fromThread?.startISO ?? null;
+  const focusDay = focusAt ? dayKey(new Date(focusAt), tz) : today;
 
   // The user can browse days; a new proposal jumps the view to its day.
   const [picked, setPicked] = useState<{ day: string; forFocus: string } | null>(null);
@@ -66,7 +69,7 @@ export function CalendarPanel() {
 
   const busyDays = useMemo(() => new Set(all.map((e) => dayKey(new Date(e.startISO), tz))), [all, tz]);
   const proposedDays = useMemo(() => new Set(proposed.map((e) => dayKey(new Date(e.startISO), tz))), [proposed, tz]);
-  const scrollTarget = proposed.find((p) => dayKey(new Date(p.startISO), tz) === day)?.startISO ?? null;
+  const scrollTarget = focusAt && dayKey(new Date(focusAt), tz) === day ? focusAt : null;
 
   return (
     <section aria-labelledby="cal-title" className="rounded-2xl border border-line bg-surface">
