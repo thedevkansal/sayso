@@ -227,7 +227,7 @@ const money = (amount: string, currency: string) =>
 async function postJson(url: string, body: unknown) {
   const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
   const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.message ?? "Something went wrong. Try again.");
+  if (!res.ok) throw Object.assign(new Error(data?.message ?? "Something went wrong. Try again."), { code: data?.error as string });
   return data;
 }
 
@@ -282,6 +282,13 @@ export function TravelCard({ threadId, action }: { threadId: string; action: Tra
       setStatus(key, "done");
       toast.success("Test booking confirmed", { description: `Ref ${data.reference}. No payment taken.` });
     } catch (e) {
+      const code = (e as { code?: string }).code ?? "";
+      // Fares move; rather than strand the user, fetch fresh ones and say why.
+      if (["offer_no_longer_available", "price_changed", "offer_expired", "offer_request_already_booked"].includes(code)) {
+        toast.info("That fare just changed", { description: "Here are fresh fares. Pick one to book." });
+        await search();
+        return;
+      }
       setFlight({ step: "error", message: e instanceof Error ? e.message : "Booking failed.", offers });
     }
   };
