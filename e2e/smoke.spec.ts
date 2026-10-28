@@ -5,7 +5,7 @@ test.describe("marketing site", () => {
   test("landing page renders and leads to the demo", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1, name: "Answer email by talking." })).toBeVisible();
-    await page.getByRole("button", { name: "Will it ever send something on its own?" }).click();
+    await page.getByText("Will it ever send something on its own?").click();
     await expect(page.getByText("Every send, calendar event and booking sits on a confirm card")).toBeVisible();
     await page.getByRole("link", { name: "Try the demo" }).first().click();
     // First visit compiles /app on the dev server; give navigation room.

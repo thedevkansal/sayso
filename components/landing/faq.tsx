@@ -1,6 +1,4 @@
-"use client";
-
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ChevronDown } from "lucide-react";
 
 const QA = [
   {
@@ -29,19 +27,19 @@ const QA = [
   },
 ];
 
+/** Native disclosure widgets: keyboard and screen-reader friendly with zero JavaScript. */
 export function Faq() {
   return (
-    <Accordion className="divide-y divide-line rounded-3xl border border-line bg-surface px-5 sm:px-7">
+    <div className="divide-y divide-line rounded-3xl border border-line bg-surface px-5 sm:px-7">
       {QA.map((item) => (
-        <AccordionItem key={item.q} value={item.q} className="border-0">
-          <AccordionTrigger className="py-5 text-base font-medium text-ink hover:no-underline">
+        <details key={item.q} className="group">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-base font-medium text-ink [&::-webkit-details-marker]:hidden">
             {item.q}
-          </AccordionTrigger>
-          <AccordionContent>
-            <p className="max-w-[68ch] pb-5 text-[0.95rem] leading-relaxed text-ink-2">{item.a}</p>
-          </AccordionContent>
-        </AccordionItem>
+            <ChevronDown className="size-4 shrink-0 text-mute transition-transform group-open:rotate-180" aria-hidden />
+          </summary>
+          <p className="max-w-[68ch] pb-5 text-[0.95rem] leading-relaxed text-ink-2">{item.a}</p>
+        </details>
       ))}
-    </Accordion>
+    </div>
   );
 }
