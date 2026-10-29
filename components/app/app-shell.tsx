@@ -88,6 +88,17 @@ function Shell() {
     if (hydrated && selectedId) void analyze(api, selectedId);
   }, [api, hydrated, selectedId]);
 
+  // Wispr Flow pastes into the focused field; with nothing focused it falls back to a "select a text
+  // field" popup. Keep the composer focused whenever a thread is on screen (desktop only, so mobile
+  // keyboards don't pop up uninvited).
+  useEffect(() => {
+    if (!hydrated || !selectedId || !window.matchMedia(DESKTOP).matches) return;
+    const id = requestAnimationFrame(() => {
+      if (!isTyping(document.activeElement)) composerRef.current?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [hydrated, selectedId]);
+
   const open = useCallback(
     (id: string) => {
       select(id);

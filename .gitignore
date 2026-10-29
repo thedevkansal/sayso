@@ -49,3 +49,13 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# demo video work files
+/video/raw/
+/video/parts/
+/video/frames/
+/video/chunks/
+/video/*.mp3
+/video/*.mp4
+/video/*.json
+!/video/segments.json
