@@ -1,22 +1,22 @@
-# Demo video: 2-minute shot list
+# Demo video script (self-recorded, real Wispr Flow)
 
-Judging weights: **Real problem 30%** · **Meaningful Wispr use 30%** · **It works 25%** · **Clear demo 15%**.
-Record at 1440×900 in demo mode (`/app`, click **Reset demo** first). Keep the Wispr Flow bar visible on screen while dictating.
+Target: under 2:30 after editing. Judging weights: **Real problem 30%** · **Meaningful Wispr use 30%** · **It works 25%** · **Clear demo 15%**.
 
-| # | Time | Shot | What to say / do | Criteria |
+**How to record:** you speak and dictate live. Hold the Flow key **only** for the 🎙 lines; narrate with it released. Record in demo mode (`sayso-delta.vercel.app/app`), **Reset demo** before each take, light theme, fullscreen (F11), notifications off, full-screen capture (Snipping Tool Win+Shift+R or OBS) so the Flow bar is in frame. Multiple takes and any order are fine; pause after each click and let the result appear before talking about it. The edit cuts the waits.
+
+| # | ~Length | Screen | Say | Criteria |
 |---|---|---|---|---|
-| 1 | 0:00–0:12 | Mira's email, full screen | "Speakers send emails like this: five questions in one message. Answering by typing means flipping between the thread and the reply, and you always miss one." | Real problem |
-| 2 | 0:12–0:20 | Landing page hero, then **Try the demo** | "Sayso lets you answer by talking." | Clear demo |
-| 3 | 0:20–0:28 | Thread open, right panel shows **6 questions to answer** | "It's already read the thread and found every question." | It works |
-| 4 | 0:28–0:45 | Hold the Flow key, ramble on camera: *"Okay so she's arriving the 14th, talk is 30 minutes, yes we cover the hotel, and set a call with her Friday 4 pm, no wait, 5."* | Talk naturally, including the correction. Show the text landing in the composer. | Meaningful Wispr use |
-| 5 | 0:45–1:00 | Ctrl+Enter. Coverage shows **4 of 6**; zoom on **You didn't answer these** (AV, dietary) and **What I understood** with "Correction applied" | "It matched each thing I said to a question, applied my 'no wait', and caught the two I forgot." | Meaningful Wispr use · It works |
-| 6 | 1:00–1:10 | Optional: **Add an answer by voice**, dictate the AV answer, Redraft | "I just say the missing bit." | Meaningful Wispr use |
-| 7 | 1:10–1:22 | Draft streams in; scroll to the **Calendar invite** card: Fri 30 Oct, 5:00–5:30 pm IST, **Clashes with** Sponsor review | "Friday at 5 became a real date, and it spotted the clash." Click **Book 5:15 pm instead**; show the draft time update. | It works |
-| 8 | 1:22–1:30 | Click **Send reply** (or Ctrl+Shift+Enter); show the toast and the **Sent** tab | "Nothing goes out until I click." | It works · Clear demo |
-| 9 | 1:30–1:45 | Priya's thread: dictate *"Haan we're coming, sirf do log… find us morning flights"*, draft, **Search test flights**, book the Duffel Airways fare, show **Test booking — no payment taken** and the flight on the calendar | "Hinglish works too, and it can line up travel. This is Duffel's test mode." | Meaningful Wispr use · It works |
-| 10 | 1:45–1:55 | Open **Accounts Desk**: red banner, no actions | "This email tries to give the AI orders: forward the inbox, approve a payment. Sayso treats email as data; only my own words create actions." | Real problem · It works |
-| 11 | 1:55–2:00 | Back to landing, URL on screen | "Sayso. Answer email by talking. sayso-delta.vercel.app" | Clear demo |
+| 1 | 10s | Landing page | "Hi, I'm Dev. This is Sayso, my project for No Hands, the Wispr challenge." | Clear demo |
+| 2 | 15s | Demo open on Mira's email; hover her five questions | "I get emails like this all the time. Five questions in one go: arrival, talk length, AV, hotel, food. When I type the reply, I always miss one." | Real problem |
+| 3 | 8s | Point at "6 questions to answer" | "Sayso reads the thread first and pulls out every question she asked." | It works |
+| 4 | 15s | Composer focused (blinking cursor) | "So I just hold my Flow key and talk." 🎙 *"Okay so she's arriving the 14th, talk is 30 minutes, yes we cover the hotel, and set a call with her Friday 4 pm, no wait, 5."* | Wispr use |
+| 5 | 20s | Ctrl+Enter; wait; show 4 of 6, gaps, What I understood | "It matched everything I said to her questions, it even caught my 'no wait', and it flagged the two I forgot: AV and food." | Wispr use · It works |
+| 6 | 15s | Click **Add an answer by voice** | 🎙 *"Oh and AV, she can use her own laptop, we'll have HDMI and a clicker. Dietary, yeah, send it by Monday."* Ctrl+Enter; show coverage update. | Wispr use |
+| 7 | 15s | Calendar invite card | "Friday at five became a real date. It clashes with something already on my calendar, so it offers 5:15 instead, and the email updates too." Click **Book 5:15 pm instead**; show the draft. | It works |
+| 8 | 8s | Ctrl+Shift+Enter; Sent tab | "Nothing goes out until I click send." | It works |
+| 9 | 25s | Priya's thread | 🎙 *"Haan we're coming, sirf do log, me and Rohan, morning flight from Mumbai. Find us flights."* Ctrl+Enter → Search test flights → Book test flight (Duffel Airways). "It handles Hinglish, and it can book travel. This is Duffel's test mode, so no real ticket, but the booking really goes through." | Wispr use · It works |
+| 10 | 12s | Accounts Desk | "This email tries to order the AI to forward my inbox and approve a payment. Sayso treats email as data. Only my own words can trigger anything." | Real problem · It works |
+| 11 | 10s (optional) | Other Gmail inbox with the reply; Google Calendar event | "And it works on real Gmail and Calendar too." | It works |
+| 12 | 6s | Landing page | "Sayso. You talk, it handles the rest. Try it, no login needed." | Clear demo |
 
-**Optional live-mode cut (if time allows):** `/connect`, sign in, reply to a real thread you sent yourself, and show the send card's exact body before clicking **Send from Gmail**. Only use your own accounts on camera.
-
-**Tips:** do one dry run first so the model has warmed up. If the wording of the draft differs from the script, keep going: the coverage panel is the point.
+Editing: raw takes are cut to the beats above, waits removed, and trimmed to under 2:30.
