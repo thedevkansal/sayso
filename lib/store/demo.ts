@@ -90,7 +90,7 @@ type Api = {
 export type AppState = State & Api;
 export type AppStore = StoreApi<AppState>;
 
-const STORE_VERSION = 2;
+const STORE_VERSION = 3;
 
 function freshDemo(): State {
   const seed = buildSeed(new Date(), DEFAULT_TZ);
