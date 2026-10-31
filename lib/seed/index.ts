@@ -181,14 +181,8 @@ Accounts Desk`,
   ];
 
   const fri = upcomingFriday(now, tz);
-  // Working days only, so a weekend visit still sees a realistic week (Sat/Sun skipped).
-  const workdays: string[] = [];
-  for (let i = 0; workdays.length < 6; i++) {
-    const d = addDays(now, i);
-    const dow = Number(formatInTimeZone(d, tz, "i"));
-    if (dow <= 5) workdays.push(formatInTimeZone(d, tz, "yyyy-MM-dd"));
-  }
-  const day = (n: number) => workdays[n];
+  const today = formatInTimeZone(now, tz, "yyyy-MM-dd");
+  const day = (offset: number) => formatInTimeZone(addDays(now, offset), tz, "yyyy-MM-dd");
   const ev = (id: string, title: string, date: string, start: string, end: string): CalendarEvent => ({
     id,
     title,
@@ -198,15 +192,18 @@ Accounts Desk`,
   });
 
   const events: CalendarEvent[] = [
-    ev("e-standup", "Programme team stand-up", day(0), "10:00", "10:30"),
+    ev("e-standup", "Programme team stand-up", today, "10:00", "10:30"),
+    ev("e-vendor", "AV vendor walkthrough", today, "12:30", "13:15"),
+    // A clash for "today at 5" too, so a same-day call shows the conflict card.
+    ev("e-sync", "Volunteer briefing", today, "16:30", "17:15"),
     ev("e-design", "Stage design review", day(1), "12:00", "13:00"),
     ev("e-catering", "Catering tasting", day(2), "15:00", "16:00"),
     ev("e-press", "Press list check-in", day(3), "11:30", "12:00"),
     // The conflict: overlaps the "Friday 5 pm" slot both the hero ramble and Jonas ask for.
     ev("e-sponsor", "Sponsor review: Kestrel Cloud", fri, "16:30", "17:15"),
     ev("e-fri-lunch", "Lunch with volunteers lead", fri, "13:00", "14:00"),
-    ev("e-budget", "Budget sign-off", day(4), "09:30", "10:30"),
-    ev("e-retro", "Weekly programme retro", day(5), "17:00", "17:45"),
+    ev("e-budget", "Budget sign-off", day(5), "09:30", "10:30"),
+    ev("e-retro", "Weekly programme retro", day(7), "17:00", "17:45"),
   ];
 
   return { threads, events, user: DEMO_USER, tz };
