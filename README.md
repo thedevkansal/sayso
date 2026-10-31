@@ -9,6 +9,7 @@
 [![Gemini](https://img.shields.io/badge/LLM-Google%20Gemini-4285f4?logo=googlegemini&logoColor=white)](https://ai.google.dev)
 
 ### [▶ Try the live demo, no login](https://sayso-delta.vercel.app/app)
+### [▶ Watch the demo video (3 min)](https://youtu.be/G8EnvCMOBAE)
 
 ![Sayso landing page](docs/screenshots/01-landing.png)
 
