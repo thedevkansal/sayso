@@ -186,7 +186,7 @@ function Features() {
             className="md:col-span-2"
             icon={CalendarCheck2}
             title="Calendar, conflict-checked"
-            body="“Friday at 5” becomes Fri 30 Oct, 5:00–5:30 pm IST, with any clash shown on the card."
+            body="“Friday at 5” becomes Fri 6 Nov, 5:00–5:30 pm IST, with any clash shown on the card."
           />
           <Feature
             className="md:col-span-2"

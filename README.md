@@ -23,7 +23,7 @@ Busy people get emails that ask five things at once, and answering them means sw
 - **"What I understood" panel**: every fact sits next to the exact words it came from; self-corrections, private asides and doubtful phrases (a dropped "not") are labelled.
 - **Streamed, editable draft**: the reply streams in from a validated plan and stays editable.
 - **Confirm cards for every action**: send, calendar invite and test flight booking each wait for an explicit click.
-- **Calendar with conflict detection**: relative dates resolve to absolute times ("Fri 30 Oct, 5:00–5:30 pm IST"), clashes are shown, and the next free slot is offered.
+- **Calendar with conflict detection**: relative dates resolve to absolute times ("Fri 6 Nov, 5:00–5:30 pm IST"), clashes are shown, and the next free slot is offered.
 - **Travel**: flight offers and test bookings through Duffel's test environment; trains open a prefilled search link.
 - **Prompt-injection defence**: email text is fenced as data, flagged when it addresses an AI, and actions must trace back to your own words (`lib/pipeline/guards.ts`).
 - **Two modes**: a no-login demo on a fictional inbox, and live mode on your Gmail and Google Calendar.

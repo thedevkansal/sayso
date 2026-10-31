@@ -3,6 +3,7 @@
 import { createContext, useContext } from "react";
 import { create, useStore, type StoreApi } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { formatInTimeZone } from "date-fns-tz";
 import type { Action, Ask, Coverage, Fact, UserProfile } from "@/lib/schemas";
 import { buildSeed, type CalendarEvent, type InboxThread } from "@/lib/seed";
 import { DEFAULT_TZ } from "@/lib/dates";
@@ -168,6 +169,13 @@ export const useDemo = create<AppState>()(
       proposals: Object.fromEntries(Object.entries(s.proposals).filter(([, p]) => p.status === "ready")),
     }),
     migrate: () => freshDemo(),
+    // Seed dates are relative to the day they were made; reseed a demo saved on an earlier day.
+    merge: (persisted, current) => {
+      const p = persisted as Partial<State> | undefined;
+      const day = (iso: string) => formatInTimeZone(new Date(iso), DEFAULT_TZ, "yyyy-MM-dd");
+      if (!p?.seededAt || day(p.seededAt) !== day(new Date().toISOString())) return current;
+      return { ...current, ...p };
+    },
     skipHydration: true,
   }),
 );

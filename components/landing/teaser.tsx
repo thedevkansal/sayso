@@ -36,7 +36,7 @@ const CASES: {
     chips: [
       {
         phrase: "Friday 4 pm, no wait, 5",
-        fact: "Call on Fri 30 Oct, 5:00–5:30 pm IST",
+        fact: "Call on Fri 6 Nov, 5:00–5:30 pm IST",
         tone: "signal",
       },
       {
